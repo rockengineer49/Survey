@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "survey-app"
+version = "0.1.0"
+description = "Borehole survey processing: merge baseline/top-of-pipe/downhole, point-elevation CSVs, and graphs."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas>=2.0",
+  "numpy>=1.24",
+  "matplotlib>=3.7",
+]
+
+[project.scripts]
+survey = "survey_app.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
