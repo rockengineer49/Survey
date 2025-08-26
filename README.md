@@ -24,12 +24,11 @@
   - Changelog: YYYY.MM.DD_PROJECT_Changelog.txt. [1]
   - Point‑Elevation CSV for a specified elevation. [1]
   - Graphs: Northing vs Depth, Easting vs Depth, Northing vs Easting. [1]
-
-## Key rules
+## Key rules and rules
 - Normalize Hole IDs to FP‑XXX, FP‑XXXa (gap pipes), FP‑XXX-b (battered). [1]
 - Replace Baseline with Surveyed when Top‑of‑Pipe is provided; attach downhole to the correct hole. [1]
 - Report discrepancies: Baseline ±5.0 threshold; replace with newest data and log full details. [1]
-
-## Project layout
+   
+## Project layout total
 - src/survey_app/: io/, processing/, trajectory/, plotting/, gui/, cli.py, config.py. [13]
 - tests/: unit tests; docs/: formulas and data dictionaries. [13]
