@@ -61,19 +61,30 @@ class SurveyApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("Error", f"Could not initialize project:\n\n{e}")
 
-    def update_survey(self):
-    # 1. Pick survey file (project or baseline, as current source)
-        survey_file = filedialog.askopenfilename(
-            title="Select Project Survey CSV",
-            filetypes=[("CSV Files", "*.csv")]
+    def update_survey_dialog():
+        root = tk.Tk()
+        root.withdraw()  # Hide the main window
+
+    # Prompt the user with three choices
+        survey_type = simpledialog.askstring(
+            "Update Survey",
+            "Choose data to update:\n- survey\n- downhole\n- both"
         )
-        if not survey_file:
+
+        if survey_type is None:
+            return  # User canceled dialog
+
+        survey_type = survey_type.lower().strip()
+        if survey_type not in ['survey', 'downhole', 'both']:
+            messagebox.showerror("Error", "Please type: survey, downhole, or both")
             return
-        try:
-            baseline_df = read_survey_csv(survey_file)
-        except Exception as e:
-            messagebox.showerror("CSV Error", f"Could not read survey file:\n{e}")
-            return
+
+    # Now, survey_type is one of 'survey', 'downhole', 'both'
+    # Use this to drive your file selection & merge logic
+    # if survey_type == 'survey': ... (ask for top of pipe file)
+    # if survey_type == 'downhole': ... (ask for downhole file)
+    # if survey_type == 'both': ... (ask for both files)
+
 
     # 2. Pick downhole data
         downhole_file = filedialog.askopenfilename(
@@ -121,6 +132,25 @@ class SurveyApp(tk.Tk):
             f"Conflicts: {changelog.get('conflicts', 'N/A')}\n"
             f"Detail: {changelog.get('msg', 'No conflicts')}"
         )
+    def update_survey(self):
+        import tkinter as tk
+
+        win = tk.Toplevel(self)
+        win.title("Select Update Type")
+        val = tk.StringVar(value="survey")
+
+        options = [("Survey (Top of Pipe Only)", "survey"),
+                   ("Downhole Only", "downhole"),
+                   ("Both", "both")]
+        for text, mode in options:
+            tk.Radiobutton(win, text=text, variable=val, value=mode).pack(anchor='w')
+        tk.Button(win, text="OK", command=win.destroy).pack()
+        win.wait_window()
+        choice = val.get()
+        tk.Message(self, text=f"You selected: {choice}").pack()
+    # proceed with file dialogs/merge logic based on 'choice'
+
+
 
         messagebox.showinfo("Not implemented", "Update Survey logic to be added.")
 
