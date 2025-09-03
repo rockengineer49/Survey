@@ -29,7 +29,6 @@ def merge_downhole_to_baseline(baseline_df, downhole_df, top_of_pipe_df=None):
         'conflicts': [],
         'msg': ''
     }
-
     # Normalize IDs
     baseline_df['ID_NORMALIZED'] = baseline_df.iloc[:,0].map(normalize_hole_id)
     downhole_df['ID_NORMALIZED'] = downhole_df['Hole'].map(normalize_hole_id)
@@ -38,11 +37,9 @@ def merge_downhole_to_baseline(baseline_df, downhole_df, top_of_pipe_df=None):
         id2top = top_of_pipe_df.set_index('ID_NORMALIZED')
     else:
         id2top = baseline_df.set_index('ID_NORMALIZED')
-
     # Compose merged output
     merged_rows = []
     existing_ids = set(baseline_df['ID_NORMALIZED'])
-
     # Include baseline or top-of-pipe as main survey entry
     for idx, row in baseline_df.iterrows():
         merged_rows.append({
@@ -52,7 +49,6 @@ def merge_downhole_to_baseline(baseline_df, downhole_df, top_of_pipe_df=None):
             'Elevation': row.get('Elevation', np.nan),
             'Status': 'Baseline'
         })
-
     # Downhole: for each unique hole
     for id_norm in sorted(downhole_df['ID_NORMALIZED'].unique()):
         downhole_points = downhole_df[downhole_df['ID_NORMALIZED'] == id_norm].copy()
@@ -65,7 +61,6 @@ def merge_downhole_to_baseline(baseline_df, downhole_df, top_of_pipe_df=None):
             # Not found (could ask to add or skip)
             changelog['conflicts'].append(f'{id_norm} missing from baseline')
             continue
-
         # Compute offsets from top
         first_row = True
         for _, drow in downhole_points.iterrows():
@@ -92,12 +87,24 @@ def merge_downhole_to_baseline(baseline_df, downhole_df, top_of_pipe_df=None):
                     'Status': 'Downhole'
                 })
         changelog['added_downhole'].append(id_norm)
-
     merged_df = pd.DataFrame(merged_rows, columns=['ID','Easting','Northing','Elevation','Status'])
-
     # Remove temp columns if present
     if 'ID_NORMALIZED' in merged_df.columns:
         merged_df = merged_df.drop(columns=['ID_NORMALIZED'])
-
     changelog['msg'] = "Top-of-pipe coordinates set for all downhole rows. Merge complete."
     return merged_df, changelog
+
+def merge_surveys(baseline_df, top_df=None, downhole_df=None):
+    """
+    Main wrapper to do merging. Returns merged_df, changelog.
+    Uses logic from your merge_downhole_to_baseline if that's your main logic.
+    """
+    if downhole_df is not None:
+        return merge_downhole_to_baseline(baseline_df, downhole_df, top_df)
+    elif top_df is not None:
+        result = top_df.copy()
+        result['Status'] = 'Surveyed'
+        changelog = {'updated_holes': list(result.index), 'msg': 'Merged top-of-pipe only'}
+        return result, changelog
+    else:
+        raise ValueError("No update data provided.")
